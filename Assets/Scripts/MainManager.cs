@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.IO;
 
 public class MainManager : MonoBehaviour
 {
@@ -11,12 +12,14 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text topScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
-    private int m_Points;
+    public int m_Points;
     
     private bool m_GameOver = false;
+
 
     
     // Start is called before the first frame update
@@ -36,6 +39,7 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
     }
 
     private void Update()
@@ -62,15 +66,32 @@ public class MainManager : MonoBehaviour
         }
     }
 
-    void AddPoint(int point)
+    public void AddPoint(int point)
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
+        //Data data = new Data();
+        //data.Score += point;
+
+        //string json = JsonUtility.ToJson(data);
+        //File.WriteAllText(Application.persistentDataPath + "/SavedData.json", json);
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        
+       // MenuManager menuManager = new MenuManager();
+        Data data = new Data();
+        //menuManager.LoadData();
+        var dataName = data.Name;
+        topScoreText.text = dataName + " has Top Score: " + m_Points;
+        
+    }
+
+    public void BackToMainMenu()
+    {
+        SceneManager.LoadScene("Menu");
     }
 }
