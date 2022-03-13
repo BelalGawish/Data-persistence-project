@@ -5,64 +5,17 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.IO;
 
-
 public class MenuManager : MonoBehaviour
 {
-    /*
-     TODO:
-    1- save score
-   
-     */
-
-    public MenuManager Instance;
-    public MainManager MainInstance;
-
+    public static MenuManager Instance;
     public Text topPlayerNameText;
     public Text topScore;
     public InputField playerInputField;
 
-    private void Awake()
+    private void Update()
     {
-        if (Instance != null)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-
-        LoadData();
-    }
-
-    public void SaveData()
-    { 
-        Data save = new Data();
-        save.Name += playerInputField.text;
-        //save.Score = MainInstance.m_Points;
-
-        string json = JsonUtility.ToJson(save);
-        File.WriteAllText(Application.persistentDataPath + "/SavedData.json" , json);
-    }
-
-    public void LoadData()
-    {
-        string path = Application.persistentDataPath + "/SavedData.json";
-        if (File.Exists(path))
-        { 
-        string json = File.ReadAllText(path);
-            Data load = JsonUtility.FromJson<Data>(json);
-
-            topPlayerNameText.text = "TPlayer Name: " + load.Name;
-            topScore.text = "TTop Score: " + load.Score;
-        }
-
-
-    }
-
-    public void SaveName()
-    {
-        SaveData();
+        topPlayerNameText.text = "Player Name: " + PlayerPrefs.GetString("TopPlayerName");
+        topScore.text = "Top Score: " + PlayerPrefs.GetInt("HighScore").ToString();
     }
 
     public void StartGame()
@@ -78,6 +31,11 @@ public class MenuManager : MonoBehaviour
 
         Application.Quit();
 #endif
+    }
+
+    public void ResetTopScore()
+    {
+        PlayerPrefs.DeleteAll();
     }
 }
 

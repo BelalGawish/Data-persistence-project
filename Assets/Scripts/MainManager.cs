@@ -14,21 +14,35 @@ public class MainManager : MonoBehaviour
     public Text ScoreText;
     public Text topScoreText;
     public GameObject GameOverText;
-    
+    public InputField playerInputField;
+    public GameObject playerInputPanel;
+    public GameObject errorText;
+
     private bool m_Started = false;
     public int m_Points;
-    
+    public string input;
+
     private bool m_GameOver = false;
 
+    public static MainManager mainManager;
 
-    
+    private void Awake()
+    {
+        if (mainManager != null)
+        {
+            Destroy(mainManager);
+            return;
+        }
+        mainManager = this;
+        DontDestroyOnLoad(gameObject);
+    }
     // Start is called before the first frame update
     void Start()
     {
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
-        
-        int[] pointCountArray = new [] {1,1,2,2,5,5};
+
+        int[] pointCountArray = new[] { 1, 1, 2, 2, 5, 5 };
         for (int i = 0; i < LineCount; ++i)
         {
             for (int x = 0; x < perLine; ++x)
@@ -39,6 +53,10 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        errorText.gameObject.SetActive(false);
+
+        topScoreText.text = PlayerPrefs.GetString("TopPlayerName") + " has high Score of " + PlayerPrefs.GetInt("HighScore").ToString();
 
     }
 
@@ -55,6 +73,7 @@ public class MainManager : MonoBehaviour
 
                 Ball.transform.SetParent(null);
                 Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
+
             }
         }
         else if (m_GameOver)
@@ -69,29 +88,56 @@ public class MainManager : MonoBehaviour
     public void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
-        //Data data = new Data();
-        //data.Score += point;
+        ScoreText.text = $"{m_Points}";
 
-        //string json = JsonUtility.ToJson(data);
-        //File.WriteAllText(Application.persistentDataPath + "/SavedData.json", json);
     }
 
     public void GameOver()
     {
+        CheckScore();
+
         m_GameOver = true;
         GameOverText.SetActive(true);
-        
-       // MenuManager menuManager = new MenuManager();
-        Data data = new Data();
-        //menuManager.LoadData();
-        var dataName = data.Name;
-        topScoreText.text = dataName + " has Top Score: " + m_Points;
-        
+
     }
 
     public void BackToMainMenu()
     {
         SceneManager.LoadScene("Menu");
+    }
+
+    private void CheckScore()
+    {
+        Debug.Log("Your score is: " + m_Points + " Saved score: " + PlayerPrefs.GetInt("HighScore"));
+
+        if (m_Points > PlayerPrefs.GetInt("HighScore"))
+        {
+            playerInputPanel.gameObject.SetActive(true);
+            SaveTopScore();
+        }
+
+    }
+
+    public void SaveInputField(string s)
+    {
+        input = s;
+        Debug.Log(input);
+    }
+
+    public void SaveTopScore()
+    {
+        if (string.IsNullOrEmpty(playerInputField.text))
+        {
+            errorText.gameObject.SetActive(true);
+        }
+
+        else
+        {
+            errorText.gameObject.SetActive(false);
+            PlayerPrefs.SetInt("HighScore", m_Points);
+            PlayerPrefs.SetString("TopPlayerName", input);
+            topScoreText.text = PlayerPrefs.GetString("TopPlayerName") + " has high Score of " + PlayerPrefs.GetInt("HighScore").ToString();
+            playerInputPanel.gameObject.SetActive(false);
+        }
     }
 }
